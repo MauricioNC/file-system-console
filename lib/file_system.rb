@@ -1,3 +1,4 @@
+require_relative '../config/logger_config.rb'
 require_relative './scanner.rb'
 require_relative './storage.rb'
 
@@ -17,19 +18,23 @@ end
 def scann_files
   system('cls')
   puts "Escaneando dcumentos..."
-  scanner = Scanner.new(PDFS_DIR)
-  json_files = scanner.scann
-  storage = Storage.new(EXCEL_PATH, JSON_CACHE_PATH)
+  $logger.info("Escaneando documentos...")
+  begin
+    scanner = Scanner.new(PDFS_DIR)
+    json_files = scanner.scann
+    storage = Storage.new(EXCEL_PATH, JSON_CACHE_PATH)
 
-  json_files.each do |file|
-    begin
+    json_files.each do |file|
       unless file_exists?(file[:file_name])
         storage.save_in_cache(file[:file_name])
         storage.save_in_excel(file)
       end
-    rescue => e
-      puts e.message
     end
+    puts "Escaneo completado exitosamente"
+    $logger.info("Escaneo completado exitosamente")
+  rescue => e
+    $logger.error("Error en la funcion scann_files: #{e.message}")
+    puts "Error en la funcion scann_files: #{e.message}"
   end
 end
 
@@ -50,15 +55,15 @@ while true
 
   case opc
   when 0
+    $logger.info("Finalizando la ejecucion del programa...")
     system('cls')
-    puts "Finalizando la ejecucion..."
+    puts "Finalizando la ejecucion del programa..."
     sleep 1
 
     break;
   when 1
     scann_files()
 
-    puts "Escaneo completado exitosamente"
     puts "#{$total_scanned_files} archivos registrados"
     puts "Pulsa 1 para listar los nuevos documentos registrados"
     list_scanned_files = gets.chomp.to_i
