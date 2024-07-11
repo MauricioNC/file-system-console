@@ -1,1 +1,1 @@
-system("ruby ./lib/file_system.rb")
+system("ruby C:/Scripts/scanned_docs/lib/file_system.rb")
