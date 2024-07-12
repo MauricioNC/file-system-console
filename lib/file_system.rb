@@ -26,7 +26,7 @@ def scann_files
 
     json_files.each do |file|
       unless file_exists?(file[:file_name])
-        storage.save_in_cache(file[:file_name])
+        storage.save_in_cache(file[:file_name], file[:file_path])
         storage.save_in_excel(file)
       end
     end

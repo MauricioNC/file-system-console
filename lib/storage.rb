@@ -13,12 +13,20 @@ class Storage
     @json_cache_path = json_cache_path
   end
 
-  def save_in_cache(file_name = "")
+  def save_in_cache(file_name = "", file_path = "")
+    abort("ERROR: file_name no puede estar vacia") if file_name.empty?
+    abort("ERROR: file_path no puede estar vacia") if file_path.empty?
+
     begin
       $logger.info("Guardando registros en la caché...")
       json_file_content = File.read(@json_cache_path)
       json_cache = JSON.parse(json_file_content)
-      json_cache["data"]["body"].push(file_name) unless file_name.empty?
+
+      json_cache["data"]["body"].push({
+        file_name: file_name,
+        file_path: file_path
+      })
+
       File.write(@json_cache_path, JSON.dump(json_cache))
       $logger.info("Proceso finalizado exitosamente....")
     rescue => e
