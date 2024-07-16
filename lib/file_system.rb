@@ -2,31 +2,31 @@ require_relative '../config/logger_config.rb'
 require_relative './scanner.rb'
 require_relative './storage.rb'
 
-EXCEL_PATH = "C:/Mauricio/Control de documentos escaneados 2024 - Mauricio.xlsx"
+$excel_path = {
+  2024 => "C:/Mauricio/Control de documentos escaneados 2024.xlsx",
+  2023 => "C:/Mauricio/Control de documentos escaneados 2023.xlsx",
+  2022 => "C:/Mauricio/Control de documentos escaneados 2022.xlsx",
+}
 PDFS_DIR = "C:/Mauricio"
 JSON_CACHE_PATH = './file_names.json'
 
-$total_scanned_files = 0
-$scanned_files = []
-
-def file_exists?(file_name = "")
+def file_exists?(file_name = "", year = "2024")
   json_file_content = File.read(JSON_CACHE_PATH)
   cache = JSON.parse(json_file_content)
-  cache['data']['body'].include?(file_name)
+  cache['data']['body']["#{year}"].any? { |obj| obj["file_name"] == file_name }
 end
 
-def scann_files
+def scann_files(year = "2024")
   system('cls')
   puts "Escaneando dcumentos..."
   $logger.info("Escaneando documentos...")
   begin
     scanner = Scanner.new(PDFS_DIR)
-    json_files = scanner.scann
-    storage = Storage.new(EXCEL_PATH, JSON_CACHE_PATH)
-
+    json_files = scanner.scann(year)
+    storage = Storage.new($excel_path[year.to_i], JSON_CACHE_PATH)
     json_files.each do |file|
-      unless file_exists?(file[:file_name])
-        storage.save_in_cache(file[:file_name], file[:file_path])
+      unless file_exists?(file[:file_name], year)
+        storage.save_in_cache(file[:file_name], file[:file_path], year)
         storage.save_in_excel(file)
       end
     end
@@ -62,13 +62,10 @@ while true
 
     break;
   when 1
-    scann_files()
+    print "Ingresa el año que deseas escanear: "
+    year = gets.chomp
 
-    puts "#{$total_scanned_files} archivos registrados"
-    puts "Pulsa 1 para listar los nuevos documentos registrados"
-    list_scanned_files = gets.chomp.to_i
-
-    puts $scanned_files if list_scanned_files == 1
+    scann_files(year)
     puts "\nPulsa Enter para continuar..."
     gets
   when 2, 3
