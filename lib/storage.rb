@@ -13,12 +13,20 @@ class Storage
     @json_cache_path = json_cache_path
   end
 
-  def save_in_cache(file_name = "")
+  def save_in_cache(file_name = "", file_path = "", year = "2024")
+    abort("ERROR: file_name no puede estar vacia") if file_name.empty?
+    abort("ERROR: file_path no puede estar vacia") if file_path.empty?
+
     begin
       $logger.info("Guardando registros en la caché...")
       json_file_content = File.read(@json_cache_path)
       json_cache = JSON.parse(json_file_content)
-      json_cache["data"]["body"].push(file_name) unless file_name.empty?
+
+      json_cache["data"]["body"]["#{year}"].push({
+        file_name: file_name,
+        file_path: file_path
+      })
+
       File.write(@json_cache_path, JSON.dump(json_cache))
       $logger.info("Proceso finalizado exitosamente....")
     rescue => e
@@ -42,14 +50,6 @@ class Storage
       @worksheet.add_cell(current_row, 5, file_hash[:document_type])
 
       @workbook.write(@excel_path)
-      $total_scanned_files += 1
-      $scanned_files.push({
-        file_name: file_hash[:file_name],
-        file_number: file_hash[:document_number],
-        added_at_row: current_row,
-        responsable: file_hash[:responsible],
-        file_path: file_hash[:file_path]
-      })
       $logger.info("Proceso finalizado exitosamente")
     rescue => e
       $logger.error("Error en la funcion svae_in_excel: #{e.message}")

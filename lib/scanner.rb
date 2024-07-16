@@ -1,7 +1,10 @@
 require 'find'
 require_relative '../config/logger_config.rb'
+require_relative '../helpers/regex_module.rb'
 
 class Scanner
+  include RegexModule
+
   attr_accessor :path
 
   def initialize(path = nil)
@@ -13,22 +16,24 @@ class Scanner
     end
   end
 
-  def scann()
+  def scann(year = "2024")
     begin
       files = []
       Find.find(@path) do |path|
         if File.file?(path)
           if path =~ /.*\.pdf$/i
             file_name = File.basename(path)
-            files.push({
-              file_name: file_name,
-              document_number: get_document_number(file_name),
-              document_type: file_name.split(' ')[0].match?(/^(oficio|of|memorandum|memo).*$/i) ? file_name.split('_')[0] : 'NE',
-              file_path: path,
-              responsible: path.split('/')[3],
-              # creation_date: File.birthtime(path).strftime("%d-%m-%Y")
-              creation_date: file_name.split('_')[-1].gsub(/.pdf/, "")
-            })
+
+            unless filter_by_year(file_name, year).empty?
+              files.push({
+                file_name: file_name,
+                document_number: get_document_number(file_name),
+                document_type: document_type(file_name),
+                file_path: path,
+                responsible: path.split('/')[3],
+                creation_date: date(file_name)
+              })
+            end
           end
         end
       end
