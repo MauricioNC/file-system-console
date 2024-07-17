@@ -1,6 +1,7 @@
 require_relative '../config/logger_config.rb'
 require_relative './scanner.rb'
 require_relative './storage.rb'
+require_relative './synchronizer.rb'
 
 $excel_path = {
   2024 => "C:/Mauricio/Control de documentos escaneados 2024.xlsx",
@@ -24,13 +25,17 @@ def scann_files(year = "2024")
     scanner = Scanner.new(PDFS_DIR)
     json_files = scanner.scann(year)
     storage = Storage.new($excel_path[year.to_i], JSON_CACHE_PATH)
+    $total_files = 0
     json_files.each do |file|
+      $total_files = 0
       unless file_exists?(file[:file_name], year)
         storage.save_in_cache(file[:file_name], file[:file_path], year)
         storage.save_in_excel(file)
+        $total_files += 1
       end
     end
     puts "Escaneo completado exitosamente"
+    puts "#{$total_files} archivos nuevos"
     $logger.info("Escaneo completado exitosamente")
   rescue => e
     $logger.error("Error en la funcion scann_files: #{e.message}")
@@ -68,10 +73,15 @@ while true
     scann_files(year)
     puts "\nPulsa Enter para continuar..."
     gets
-  when 2, 3
+  when 2
     system('cls')
-    puts "Esta accion todavia no esta disponible"
-    print "Pulsa Enter para continuar..."
+    sync = Synchronizer.new(PDFS_DIR)
+    sync.start
+    gets
+  when 3
+    system('cls')
+    puts "Esta acción no está disponible todavía"
+    puts "\nPulsa Enter para continuar..."
     gets
   else
     system("cls")
