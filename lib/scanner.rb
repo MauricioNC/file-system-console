@@ -23,7 +23,6 @@ class Scanner
         if File.file?(path)
           if path =~ /.*\.pdf$/i
             file_name = File.basename(path)
-
             unless filter_by_year(file_name, year).empty?
               files.push({
                 file_name: file_name,

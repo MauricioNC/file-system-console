@@ -1,7 +1,13 @@
-require_relative '../config/logger_config.rb'
-require_relative './scanner.rb'
-require_relative './storage.rb'
-require_relative './synchronizer.rb'
+begin
+  require_relative '../config/logger_config.rb'
+  require_relative './scanner.rb'
+  require_relative './storage.rb'
+  require_relative './synchronizer.rb'
+  require_relative '../helpers/file_validations.rb'
+rescue LoadError => e
+  puts "Algo ha salido mal. Error: #{e.message}"
+end
+
 
 $excel_path = {
   2024 => "C:/Mauricio/Control de documentos escaneados 2024.xlsx",
@@ -11,12 +17,6 @@ $excel_path = {
 PDFS_DIR = "C:/Mauricio"
 JSON_CACHE_PATH = './file_names.json'
 
-def file_exists?(file_name = "", year = "2024")
-  json_file_content = File.read(JSON_CACHE_PATH)
-  cache = JSON.parse(json_file_content)
-  cache['data']['body']["#{year}"].any? { |obj| obj["file_name"] == file_name }
-end
-
 def scann_files(year = "2024")
   system('cls')
   puts "Escaneando dcumentos..."
@@ -24,11 +24,12 @@ def scann_files(year = "2024")
   begin
     scanner = Scanner.new(PDFS_DIR)
     json_files = scanner.scann(year)
+
     storage = Storage.new($excel_path[year.to_i], JSON_CACHE_PATH)
     $total_files = 0
+
     json_files.each do |file|
-      $total_files = 0
-      unless file_exists?(file[:file_name], year)
+      unless FileValidations.file_exists?(file[:file_name], year)
         storage.save_in_cache(file[:file_name], file[:file_path], year)
         storage.save_in_excel(file)
         $total_files += 1
@@ -76,8 +77,13 @@ while true
   when 2
     system('cls')
     sync = Synchronizer.new(PDFS_DIR)
-    sync.start
-    gets
+    synchronized_files = sync.start
+
+    if synchronized_files.nil?
+      puts "No hay archivos para sincronizar"
+      print "\n\nPulsa cualquier tecla para continuar..."
+      gets
+    end
   when 3
     system('cls')
     puts "Esta acción no está disponible todavía"

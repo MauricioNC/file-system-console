@@ -17,19 +17,14 @@ class Synchronizer
     root_files = get_root_files(year)
     sub_files = get_sub_files(year)
 
+    return nil if root_files.count == sub_files.count
+
     # getting only the file names
     root_file_names = root_files.map { |file_item| file_item[:file_name] }
     sub_file_names = sub_files.map { |file_item| file_item[:file_name] }
 
     # returns an array with the file names that doesn't exist in the dest. path
     sync_files = root_file_names - sub_file_names
-
-    if sync_files.empty?
-      puts "No hay archivos para sincronizar"
-      puts "\nPulsa cualquier tecla para continuar..."
-      gets
-      return
-    end
 
     synchronize_files(sync_files, root_files)
   end
