@@ -77,13 +77,10 @@ while true
   when 2
     system('cls')
     sync = Synchronizer.new(PDFS_DIR)
-    synchronized_files = sync.start
+    sync.start
 
-    if synchronized_files.nil?
-      puts "No hay archivos para sincronizar"
-      print "\n\nPulsa cualquier tecla para continuar..."
-      gets
-    end
+    print "\nPulsa Enter para continuar..."
+    gets
   when 3
     system('cls')
     puts "Esta acción no está disponible todavía"

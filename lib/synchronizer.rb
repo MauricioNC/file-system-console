@@ -48,8 +48,13 @@ class Synchronizer
         FileUtils.cp(file[:file_path], File.join(dest_dir, file[:file_name]))
       end
 
-      puts "Archivos sincronizados correctamente..."
-      puts "Total de archivos sincronizados: #{sync_files.size}"
+      if sync_files.size > 0
+        puts "\nbArchivos sincronizados correctamente..."
+        puts "Total de archivos sincronizados: #{sync_files.size}"
+      else
+        puts "\nNo hay archivos para sincronizar"
+      end
+
     rescue => e
       puts "Algo ha salido mal..."
       puts e.message
