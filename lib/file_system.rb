@@ -1,35 +1,46 @@
-require_relative './scanner.rb'
-require_relative './storage.rb'
+begin
+  require_relative '../config/logger_config.rb'
+  require_relative './scanner.rb'
+  require_relative './storage.rb'
+  require_relative './synchronizer.rb'
+  require_relative '../helpers/file_validations.rb'
+rescue LoadError => e
+  puts "Algo ha salido mal. Error: #{e.message}"
+end
 
-EXCEL_PATH = "C:/Mauricio/Control de documentos escaneados 2024 - Mauricio.xlsx"
+
+$excel_path = {
+  2024 => "C:/Mauricio/Control de documentos escaneados 2024.xlsx",
+  2023 => "C:/Mauricio/Control de documentos escaneados 2023.xlsx",
+  2022 => "C:/Mauricio/Control de documentos escaneados 2022.xlsx",
+}
 PDFS_DIR = "C:/Mauricio"
 JSON_CACHE_PATH = './file_names.json'
 
-$total_scanned_files = 0
-$scanned_files = []
-
-def file_exists?(file_name = "")
-  json_file_content = File.read(JSON_CACHE_PATH)
-  cache = JSON.parse(json_file_content)
-  cache['data']['body'].include?(file_name)
-end
-
-def scann_files
+def scann_files(year = "2024", reason = nil)
   system('cls')
   puts "Escaneando dcumentos..."
-  scanner = Scanner.new(PDFS_DIR)
-  json_files = scanner.scann
-  storage = Storage.new(EXCEL_PATH, JSON_CACHE_PATH)
+  $logger.info("Escaneando documentos...")
+  begin
+    scanner = Scanner.new(PDFS_DIR)
+    json_files = scanner.scann(year, reason)
 
-  json_files.each do |file|
-    begin
-      unless file_exists?(file[:file_name])
-        storage.save_in_cache(file[:file_name])
+    storage = Storage.new($excel_path[year.to_i], JSON_CACHE_PATH)
+    $total_files = 0
+
+    json_files.each do |file|
+      unless FileValidations.file_exists?(file[:file_name], year)
+        storage.save_in_cache(file[:file_name], file[:file_path], year)
         storage.save_in_excel(file)
+        $total_files += 1
       end
-    rescue => e
-      puts e.message
     end
+    puts "Escaneo completado exitosamente"
+    puts "#{$total_files} archivos nuevos"
+    $logger.info("Escaneo completado exitosamente")
+  rescue => e
+    $logger.error("Error en la funcion scann_files: #{e.message}")
+    puts "Error en la funcion scann_files: #{e.message}"
   end
 end
 
@@ -50,26 +61,30 @@ while true
 
   case opc
   when 0
+    $logger.info("Finalizando la ejecucion del programa...")
     system('cls')
-    puts "Finalizando la ejecucion..."
+    puts "Finalizando la ejecucion del programa..."
     sleep 1
 
     break;
   when 1
-    scann_files()
+    print "Ingresa el año que deseas escanear: "
+    year = gets.chomp
 
-    puts "Escaneo completado exitosamente"
-    puts "#{$total_scanned_files} archivos registrados"
-    puts "Pulsa 1 para listar los nuevos documentos registrados"
-    list_scanned_files = gets.chomp.to_i
-
-    puts $scanned_files if list_scanned_files == 1
+    scann_files(year, "save")
     puts "\nPulsa Enter para continuar..."
     gets
-  when 2, 3
+  when 2
     system('cls')
-    puts "Esta accion todavia no esta disponible"
-    print "Pulsa Enter para continuar..."
+    sync = Synchronizer.new(PDFS_DIR)
+    sync.start
+
+    print "\nPulsa Enter para continuar..."
+    gets
+  when 3
+    system('cls')
+    puts "Esta acción no está disponible todavía"
+    puts "\nPulsa Enter para continuar..."
     gets
   else
     system("cls")
