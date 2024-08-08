@@ -1,6 +1,13 @@
-require_relative '../config/logger_config.rb'
-require_relative './scanner.rb'
-require_relative './storage.rb'
+begin
+  require_relative '../config/logger_config.rb'
+  require_relative './scanner.rb'
+  require_relative './storage.rb'
+  require_relative './synchronizer.rb'
+  require_relative '../helpers/file_validations.rb'
+rescue LoadError => e
+  puts "Algo ha salido mal. Error: #{e.message}"
+end
+
 
 $excel_path = {
   2024 => "C:/Mauricio/Control de documentos escaneados 2024.xlsx",
@@ -10,27 +17,26 @@ $excel_path = {
 PDFS_DIR = "C:/Mauricio"
 JSON_CACHE_PATH = './file_names.json'
 
-def file_exists?(file_name = "", year = "2024")
-  json_file_content = File.read(JSON_CACHE_PATH)
-  cache = JSON.parse(json_file_content)
-  cache['data']['body']["#{year}"].any? { |obj| obj["file_name"] == file_name }
-end
-
-def scann_files(year = "2024")
+def scann_files(year = "2024", reason = nil)
   system('cls')
   puts "Escaneando dcumentos..."
   $logger.info("Escaneando documentos...")
   begin
     scanner = Scanner.new(PDFS_DIR)
-    json_files = scanner.scann(year)
+    json_files = scanner.scann(year, reason)
+
     storage = Storage.new($excel_path[year.to_i], JSON_CACHE_PATH)
+    $total_files = 0
+
     json_files.each do |file|
-      unless file_exists?(file[:file_name], year)
+      unless FileValidations.file_exists?(file[:file_name], year)
         storage.save_in_cache(file[:file_name], file[:file_path], year)
         storage.save_in_excel(file)
+        $total_files += 1
       end
     end
     puts "Escaneo completado exitosamente"
+    puts "#{$total_files} archivos nuevos"
     $logger.info("Escaneo completado exitosamente")
   rescue => e
     $logger.error("Error en la funcion scann_files: #{e.message}")
@@ -65,13 +71,20 @@ while true
     print "Ingresa el año que deseas escanear: "
     year = gets.chomp
 
-    scann_files(year)
+    scann_files(year, "save")
     puts "\nPulsa Enter para continuar..."
     gets
-  when 2, 3
+  when 2
     system('cls')
-    puts "Esta accion todavia no esta disponible"
-    print "Pulsa Enter para continuar..."
+    sync = Synchronizer.new(PDFS_DIR)
+    sync.start
+
+    print "\nPulsa Enter para continuar..."
+    gets
+  when 3
+    system('cls')
+    puts "Esta acción no está disponible todavía"
+    puts "\nPulsa Enter para continuar..."
     gets
   else
     system("cls")

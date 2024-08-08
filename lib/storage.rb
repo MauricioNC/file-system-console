@@ -1,16 +1,27 @@
-require 'rubyXL'
-require 'rubyXL/convenience_methods'
-require 'json'
-require_relative '../config/logger_config.rb'
+begin
+  require 'rubyXL'
+  require 'rubyXL/convenience_methods'
+  require 'json'
+
+  # Requiring local files
+  require_relative '../config/logger_config.rb'
+rescue LoadError => e
+  puts "Ha ocurrido un error. Error: #{e.message}"
+end
+
 
 class Storage
   attr_reader :workbook, :excel_path, :worksheet
 
-  def initialize excel_path, json_cache_path
-    @workbook = RubyXL::Parser.parse(excel_path)
-    @excel_path = excel_path
-    @worksheet = @workbook[0]
-    @json_cache_path = json_cache_path
+  def initialize(excel_path, json_cache_path)
+    begin
+      @workbook = RubyXL::Parser.parse(excel_path)
+      @excel_path = excel_path
+      @worksheet = @workbook[0]
+      @json_cache_path = json_cache_path
+    rescue => e
+      puts e.message
+    end
   end
 
   def save_in_cache(file_name = "", file_path = "", year = "2024")
