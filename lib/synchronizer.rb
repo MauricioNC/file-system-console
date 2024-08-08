@@ -33,7 +33,7 @@ class Synchronizer
 
   def get_root_files(year)
     root_scanner = Scanner.new(@root_path)
-    root_scanner.scann(year)
+    root_scanner.scann(year, "sync")
   end
 
   def synchronize_files(sync_files, root_files)
@@ -63,6 +63,6 @@ class Synchronizer
 
   def get_sub_files(year)
     sub_scanner = Scanner.new(@sub_path)
-    sub_scanner.scann(year)
+    sub_scanner.scann(year, "sync")
   end
 end

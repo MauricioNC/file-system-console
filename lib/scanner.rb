@@ -11,39 +11,54 @@ class Scanner
   def initialize(path = nil)
     begin
       @path = path
+      @file_data = []
     rescue => e
       $logger.error("Error en la funcion svae_in_excel: #{e.message}")
       puts "Error en la funcion initialize de la clase Scanner: #{e.message}"
     end
   end
 
-  def scann(year = "2024")
+  def scann(year = "2024", reason = nil)
+    return nil if reason.nil?
+
     begin
-      files = []
       Find.find(@path) do |path|
-        if File.file?(path)
-          if path =~ /.*\.pdf$/i
-            file_name = File.basename(path)
-            unless FileValidations.file_exists?(file_name, year)
-              unless filter_by_year(file_name, year).empty?
-                files.push({
-                  file_name: file_name,
-                  document_number: get_document_number(file_name),
-                  document_type: document_type(file_name),
-                  file_path: path,
-                  responsible: path.split('/')[3],
-                  creation_date: date(file_name)
-                })
-              end
-            end
+        if File.file?(path) && path =~ /.*\.pdf$/i
+          file_name = File.basename(path)
+
+          if reason == "save"
+            self.get_files_to_save(file_name, year, path)
+          elsif reason == "sync"
+            self.get_files_to_sync(file_name, year, path)
           end
         end
       end
-      files
+
+      @file_data
     rescue => e
       $logger.error("Error en la funcion scann: #{e.message}")
       puts "Error en la funcion scann: #{e.message}"
     end
+  end
+
+  def get_files_to_save(file_name, year, path)
+    unless FileValidations.file_exists?(file_name, year)
+      @file_data.push({
+        file_name: file_name,
+        document_number: get_document_number(file_name),
+        document_type: document_type(file_name),
+        file_path: path,
+        responsible: path.split('/')[3],
+        creation_date: date(file_name)
+      }) if filter_by_year(file_name, year)
+    end
+  end
+
+  def get_files_to_sync(file_name, year, path)
+    @file_data.push({
+      file_name: file_name,
+      file_path: path,
+    }) if filter_by_year(file_name, year)
   end
 
   private

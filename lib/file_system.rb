@@ -17,13 +17,13 @@ $excel_path = {
 PDFS_DIR = "C:/Mauricio"
 JSON_CACHE_PATH = './file_names.json'
 
-def scann_files(year = "2024")
+def scann_files(year = "2024", reason = nil)
   system('cls')
   puts "Escaneando dcumentos..."
   $logger.info("Escaneando documentos...")
   begin
     scanner = Scanner.new(PDFS_DIR)
-    json_files = scanner.scann(year)
+    json_files = scanner.scann(year, reason)
 
     storage = Storage.new($excel_path[year.to_i], JSON_CACHE_PATH)
     $total_files = 0
@@ -71,7 +71,7 @@ while true
     print "Ingresa el año que deseas escanear: "
     year = gets.chomp
 
-    scann_files(year)
+    scann_files(year, "save")
     puts "\nPulsa Enter para continuar..."
     gets
   when 2
