@@ -1,4 +1,9 @@
+require_relative './config.rb'
 require_relative './config/logger_config.rb'
+require_relative './lib/file_system.rb'
 
-$logger.info('Iniciando la ejecucion del programa...')
-system("ruby C:/Scripts/scanned_docs/lib/file_system.rb")
+puts "Inicializando memoria cache..."
+set_cache()
+sleep 3
+
+start_app()

@@ -49,7 +49,7 @@ class Synchronizer
       end
 
       if sync_files.size > 0
-        puts "\nbArchivos sincronizados correctamente..."
+        puts "\nArchivos sincronizados correctamente..."
         puts "Total de archivos sincronizados: #{sync_files.size}"
       else
         puts "\nNo hay archivos para sincronizar"
