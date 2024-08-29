@@ -1,7 +1,5 @@
 require 'find'
-require_relative '../config/logger_config.rb'
 require_relative '../helpers/regex_module.rb'
-require_relative '../helpers/file_validations.rb'
 
 class Scanner
   include RegexModule

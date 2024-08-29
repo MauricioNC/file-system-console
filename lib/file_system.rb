@@ -1,5 +1,4 @@
 begin
-  require_relative '../config/logger_config.rb'
   require_relative './scanner.rb'
   require_relative './storage.rb'
   require_relative './synchronizer.rb'
@@ -15,16 +14,17 @@ def scann_files(year = "2024", reason = nil)
     scanner = Scanner.new(PDFS_DIR)
     json_files = scanner.scann(year, reason)
 
-    storage = Storage.new($excel_path[year.to_i], JSON_FILE_NAMES)
     $total_files = 0
-
-    json_files.each do |file|
-      unless $file_names_data["#{year}"].include?(file[:file_name])
+    unless json_files.empty?
+      storage = Storage.new($excel_path[year.to_i], JSON_FILE_NAMES)
+      json_files.each do |file|
         storage.save_in_cache(file[:file_name], file[:file_path], year)
         storage.save_in_excel(file)
         $total_files += 1
       end
     end
+
+
     puts "Escaneo completado exitosamente"
     puts "#{$total_files} archivos nuevos"
     $logger.info("Escaneo completado exitosamente")
