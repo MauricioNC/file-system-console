@@ -17,8 +17,11 @@ class Synchronizer
     root_files = get_root_files(year)
     sub_files = get_sub_files(year)
 
-    return nil if root_files.count == sub_files.count
-
+    if root_files.count == sub_files.count
+      puts "No hay archivos para sincronizar."
+      return nil
+    end
+  
     # getting only the file names
     root_file_names = root_files.map { |file_item| file_item[:file_name] }
     sub_file_names = sub_files.map { |file_item| file_item[:file_name] }
@@ -49,7 +52,7 @@ class Synchronizer
       end
 
       if sync_files.size > 0
-        puts "\nbArchivos sincronizados correctamente..."
+        puts "\nArchivos sincronizados correctamente..."
         puts "Total de archivos sincronizados: #{sync_files.size}"
       else
         puts "\nNo hay archivos para sincronizar"

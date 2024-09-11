@@ -1,7 +1,5 @@
 require 'find'
-require_relative '../config/logger_config.rb'
 require_relative '../helpers/regex_module.rb'
-require_relative '../helpers/file_validations.rb'
 
 class Scanner
   include RegexModule
@@ -42,7 +40,7 @@ class Scanner
   end
 
   def get_files_to_save(file_name, year, path)
-    unless FileValidations.file_exists?(file_name, year)
+    unless $file_names_data["#{year}"].include?(file_name)
       @file_data.push({
         file_name: file_name,
         document_number: get_document_number(file_name),

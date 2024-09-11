@@ -2,9 +2,6 @@ begin
   require 'rubyXL'
   require 'rubyXL/convenience_methods'
   require 'json'
-
-  # Requiring local files
-  require_relative '../config/logger_config.rb'
 rescue LoadError => e
   puts "Ha ocurrido un error. Error: #{e.message}"
 end
@@ -39,6 +36,7 @@ class Storage
       })
 
       File.write(@json_cache_path, JSON.dump(json_cache))
+      storage_logger("CH -- Nuevo archivo registrado en cache", file_name)
       $logger.info("Proceso finalizado exitosamente....")
     rescue => e
       $logger.error("Error en la funcion save_in_cache: #{e.message}")
@@ -61,6 +59,7 @@ class Storage
       @worksheet.add_cell(current_row, 5, file_hash[:document_type])
 
       @workbook.write(@excel_path)
+      storage_logger("EX -- Nuevo archivo registrado en Excel", file_hash[:file_name])
       $logger.info("Proceso finalizado exitosamente")
     rescue => e
       $logger.error("Error en la funcion svae_in_excel: #{e.message}")
