@@ -11,6 +11,7 @@ JSON_FILE_NAMES = './file_names.json'
 $file_names_data = {}
 
 def set_cache
+  puts "Inicializando memoria cache..."
   json_file_content = File.read(JSON_FILE_NAMES)
   file_names_storage = [].push(JSON.parse(json_file_content))
 
