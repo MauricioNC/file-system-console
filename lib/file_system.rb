@@ -18,12 +18,15 @@ def scann_files(year = "2024", reason = nil)
     unless json_files.empty?
       storage = Storage.new($excel_path[year.to_i], JSON_FILE_NAMES)
       json_files.each do |file|
+    unless json_files.empty?
+      storage = Storage.new($excel_path[year.to_i], JSON_FILE_NAMES)
+      json_files.each do |file|
         storage.save_in_cache(file[:file_name], file[:file_path], year)
         storage.save_in_excel(file)
         $total_files += 1
       end
     end
-    
+
     puts "Escaneo completado exitosamente"
     puts "#{$total_files} archivos nuevos"
     $logger.info("Escaneo completado exitosamente")
